@@ -1,0 +1,73 @@
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --line: #dbe3ee;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: radial-gradient(circle at top right, #d6fff8 0%, var(--bg) 45%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-wrap {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: min(780px, 100%);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 16px 38px rgba(15, 118, 110, 0.08);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 40px);
+  letter-spacing: 0.05em;
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.links a {
+  color: #fff;
+  background: var(--primary);
+  padding: 11px 16px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.links a:hover {
+  background: var(--primary-dark);
+}
+
+.sub {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line);
+  font-size: 14px;
+}

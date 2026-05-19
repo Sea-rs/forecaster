@@ -80,6 +80,7 @@ th {
   font-weight: 700;
   border-top: 2px solid #7fcfc3;
   border-bottom: 1px solid #cde8e2;
+  border-left: 0;
 }
 
 .muted {
@@ -87,8 +88,7 @@ th {
 }
 
 .table-wrap {
-  border-top: 1px solid #dbe3ee;
-  border-bottom: 1px solid #dbe3ee;
+  border: 1px solid #dbe3ee;
   overflow-x: auto;
   overflow-y: auto;
   max-height: 480px;
@@ -211,6 +211,33 @@ th {
   border-top: 1px solid #dbe3ee;
 }
 
+.total-summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.total-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #cce8e3;
+  border-radius: 8px;
+  background: #f4fbfa;
+}
+
+.total-label {
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.total-value {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #0b4f4a;
+}
+
 .save-form-row {
   display: flex;
   align-items: center;
@@ -273,6 +300,14 @@ th {
   color: #1f2937;
   border-bottom: 2px solid #0f766e;
   padding-bottom: 8px;
+}
+
+thead tr th:first-of-type {
+  border-left: 0;
+}
+
+.metric-name-cell {
+  border-left: 0;
 }
 
 .metric-row.metric-syauri-row:last-of-type td {

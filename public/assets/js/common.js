@@ -255,6 +255,22 @@ window.ForecasterUI.closeModal = (modal) => {
         cell.textContent = formatValue(total);
       }
     });
+
+    // Update overall totals from 1H + 2H values.
+    ['uriage', 'syauri'].forEach((metric) => {
+      const target = document.querySelector(`.total-value[data-total-metric="${metric}"]`);
+      if (!target) {
+        return;
+      }
+
+      let grandTotal = 0;
+      document.querySelectorAll(`.half-year-value[data-metric="${metric}"]`).forEach((cell) => {
+        const normalized = String(cell.textContent ?? '').replace(/,/g, '').trim();
+        grandTotal += Number(normalized) || 0;
+      });
+
+      target.textContent = formatValue(grandTotal);
+    });
   };
 
   // Initial calculation on page load

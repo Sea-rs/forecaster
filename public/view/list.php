@@ -259,6 +259,16 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
         <input type="hidden" name="save_year" value="<?= (int)$year ?>">
         <input type="hidden" name="save_source_register" value="<?= htmlspecialchars($registerName, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="cell_edits" id="cell-edits-input">
+        <div class="total-summary" aria-live="polite">
+          <div class="total-item">
+            <span class="total-label">売上合計</span>
+            <span id="total-uriage" class="total-value" data-total-metric="uriage">0</span>
+          </div>
+          <div class="total-item">
+            <span class="total-label">社売合計</span>
+            <span id="total-syauri" class="total-value" data-total-metric="syauri">0</span>
+          </div>
+        </div>
         <div class="save-form-row">
           <label for="save-register-name">登録名</label>
           <input type="text" id="save-register-name" name="save_new_register"

@@ -249,20 +249,82 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
     return 'その他';
   };
 
-  $isMonthMap = static function (array $value): bool {
-    foreach ($value as $k => $v) {
-      if (!is_scalar($v)) {
+  $isMetricMap = static function (array $value): bool {
+    if (count($value) === 0) {
+      return false;
+    }
+
+    foreach ($value as $metric => $metricValue) {
+      if (!in_array((string)$metric, ['uriage', 'syauri', 'seikyu'], true)) {
         return false;
       }
+      if (!is_scalar($metricValue)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  $isMonthMap = static function (array $value) use ($isMetricMap): bool {
+    foreach ($value as $k => $v) {
       if (preg_match('/^\d{1,2}月$/u', (string)$k) !== 1) {
         return false;
       }
+
+      if (is_scalar($v)) {
+        continue;
+      }
+
+      if (is_array($v) && $isMetricMap($v)) {
+        continue;
+      }
+
+      return false;
     }
 
     return count($value) > 0;
   };
 
   $normalizedEdits = [];
+
+  $setNormalizedEdit = static function (string $status, string $jobName, string $monthLabel, string $metric, $value) use (&$normalizedEdits): void {
+    if (!is_scalar($value) || !in_array($metric, ['uriage', 'syauri', 'seikyu'], true)) {
+      return;
+    }
+
+    if (!isset($normalizedEdits[$status])) {
+      $normalizedEdits[$status] = [];
+    }
+    if (!isset($normalizedEdits[$status][$jobName])) {
+      $normalizedEdits[$status][$jobName] = [];
+    }
+    if (!isset($normalizedEdits[$status][$jobName][$monthLabel])) {
+      $normalizedEdits[$status][$jobName][$monthLabel] = [];
+    }
+
+    $normalizedEdits[$status][$jobName][$monthLabel][$metric] = (float)$value;
+  };
+
+  $normalizeMonthEdits = static function (string $status, string $jobName, array $months) use ($setNormalizedEdit): void {
+    foreach ($months as $monthLabel => $editedValue) {
+      $monthLabel = (string)$monthLabel;
+      if (preg_match('/^\d{1,2}月$/u', $monthLabel) !== 1) {
+        continue;
+      }
+
+      if (is_array($editedValue)) {
+        foreach ($editedValue as $metric => $metricValue) {
+          $setNormalizedEdit($status, $jobName, $monthLabel, (string)$metric, $metricValue);
+        }
+        continue;
+      }
+
+      // 旧形式: 単一値は請求額として扱い、売上/社売へもフォールバック可能に保持する。
+      $setNormalizedEdit($status, $jobName, $monthLabel, 'seikyu', $editedValue);
+    }
+  };
+
   foreach ($cellEdits as $topKey => $topValue) {
     if (!is_array($topValue)) {
       continue;
@@ -270,27 +332,35 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
 
     // 旧形式: { jobName: {"4月": "..."} }
     if ($isMonthMap($topValue)) {
-      $normalizedEdits['__legacy__'][(string)$topKey] = $topValue;
+      $normalizeMonthEdits('__legacy__', (string)$topKey, $topValue);
       continue;
     }
 
-    // 新形式: { status: { jobName: {"4月": "..."} } }
+    // 新形式: { status: { jobName: {"4月": {"uriage": "...", "syauri": "..."}} } }
     foreach ($topValue as $jobName => $months) {
       if (!is_array($months) || !$isMonthMap($months)) {
         continue;
       }
 
-      $normalizedEdits[(string)$topKey][(string)$jobName] = $months;
+      $normalizeMonthEdits((string)$topKey, (string)$jobName, $months);
     }
   }
 
-  $resolveEditedTotal = static function (string $jobStatus, string $baseJobName, string $monthLabel, float $default) use ($normalizedEdits): float {
-    if (isset($normalizedEdits[$jobStatus][$baseJobName][$monthLabel])) {
-      return (float)$normalizedEdits[$jobStatus][$baseJobName][$monthLabel];
+  $resolveEditedTotal = static function (string $jobStatus, string $baseJobName, string $monthLabel, string $metric, float $default) use ($normalizedEdits): float {
+    if (isset($normalizedEdits[$jobStatus][$baseJobName][$monthLabel][$metric])) {
+      return (float)$normalizedEdits[$jobStatus][$baseJobName][$monthLabel][$metric];
     }
 
-    if (isset($normalizedEdits['__legacy__'][$baseJobName][$monthLabel])) {
-      return (float)$normalizedEdits['__legacy__'][$baseJobName][$monthLabel];
+    if ($metric !== 'seikyu' && isset($normalizedEdits[$jobStatus][$baseJobName][$monthLabel]['seikyu'])) {
+      return (float)$normalizedEdits[$jobStatus][$baseJobName][$monthLabel]['seikyu'];
+    }
+
+    if (isset($normalizedEdits['__legacy__'][$baseJobName][$monthLabel][$metric])) {
+      return (float)$normalizedEdits['__legacy__'][$baseJobName][$monthLabel][$metric];
+    }
+
+    if ($metric !== 'seikyu' && isset($normalizedEdits['__legacy__'][$baseJobName][$monthLabel]['seikyu'])) {
+      return (float)$normalizedEdits['__legacy__'][$baseJobName][$monthLabel]['seikyu'];
     }
 
     return $default;
@@ -345,15 +415,24 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
     if (!isset($groups[$jobStatus][$baseJobName][$monthLabel])) {
       $groups[$jobStatus][$baseJobName][$monthLabel] = [
         'rowKeys' => [],
-        'origValues' => [],
-        'origTotal' => 0.0,
+        'origValues' => [
+          'uriage' => [],
+          'syauri' => [],
+        ],
+        'origTotal' => [
+          'uriage' => 0.0,
+          'syauri' => 0.0,
+        ],
       ];
     }
 
-    $origSeikyu = $toFloat((string)($job['job_seikyu'] ?? '0'));
+    $origUriage = $toFloat((string)($job['job_uriage'] ?? '0'));
+    $origSyauri = $toFloat((string)($job['job_syauri'] ?? '0'));
     $groups[$jobStatus][$baseJobName][$monthLabel]['rowKeys'][] = (string)$jobKey;
-    $groups[$jobStatus][$baseJobName][$monthLabel]['origValues'][(string)$jobKey] = $origSeikyu;
-    $groups[$jobStatus][$baseJobName][$monthLabel]['origTotal'] += $origSeikyu;
+    $groups[$jobStatus][$baseJobName][$monthLabel]['origValues']['uriage'][(string)$jobKey] = $origUriage;
+    $groups[$jobStatus][$baseJobName][$monthLabel]['origValues']['syauri'][(string)$jobKey] = $origSyauri;
+    $groups[$jobStatus][$baseJobName][$monthLabel]['origTotal']['uriage'] += $origUriage;
+    $groups[$jobStatus][$baseJobName][$monthLabel]['origTotal']['syauri'] += $origSyauri;
   }
 
   // 元データをコピーし、新規登録名データだけ編集値を反映。
@@ -368,40 +447,48 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
     foreach ($jobsByName as $baseJobName => $months) {
       foreach ($months as $monthLabel => $group) {
       $rowKeys = $group['rowKeys'];
-      $origValues = $group['origValues'];
-      $origTotal = (float)$group['origTotal'];
 
       if (count($rowKeys) === 0) {
         continue;
       }
 
-      $targetTotal = $resolveEditedTotal((string)$jobStatus, (string)$baseJobName, (string)$monthLabel, $origTotal);
+      foreach (['uriage', 'syauri'] as $metric) {
+        $origValues = $group['origValues'][$metric] ?? [];
+        $origTotal = (float)($group['origTotal'][$metric] ?? 0.0);
+        $targetTotal = $resolveEditedTotal((string)$jobStatus, (string)$baseJobName, (string)$monthLabel, $metric, $origTotal);
 
-      $assigned = [];
+        $assigned = [];
 
-      if (abs($origTotal) > 0.001) {
+        if (abs($origTotal) > 0.001) {
+          foreach ($rowKeys as $rowKey) {
+            $origValue = (float)($origValues[$rowKey] ?? 0.0);
+            $assigned[$rowKey] = (int)round($origValue * ($targetTotal / $origTotal));
+          }
+        } else {
+          foreach ($rowKeys as $rowKey) {
+            $assigned[$rowKey] = 0;
+          }
+        }
+
+        // 丸め誤差を先頭行に寄せて、合計が必ず編集値になるよう補正。
+        $targetRounded = (int)round($targetTotal);
+        $assignedTotal = array_sum($assigned);
+        $diff = $targetRounded - $assignedTotal;
+        $firstRowKey = $rowKeys[0];
+        $assigned[$firstRowKey] = (int)($assigned[$firstRowKey] + $diff);
+
         foreach ($rowKeys as $rowKey) {
-          $origValue = (float)($origValues[$rowKey] ?? 0.0);
-          $assigned[$rowKey] = (int)round($origValue * ($targetTotal / $origTotal));
-        }
-      } else {
-        foreach ($rowKeys as $rowKey) {
-          $assigned[$rowKey] = 0;
-        }
-      }
+          if (!isset($newJobs[$rowKey]) || !is_array($newJobs[$rowKey])) {
+            continue;
+          }
 
-      // 丸め誤差を先頭行に寄せて、合計が必ず編集値になるよう補正。
-      $targetRounded = (int)round($targetTotal);
-      $assignedTotal = array_sum($assigned);
-      $diff = $targetRounded - $assignedTotal;
-      $firstRowKey = $rowKeys[0];
-      $assigned[$firstRowKey] = (int)($assigned[$firstRowKey] + $diff);
+          if ($metric === 'uriage') {
+            $newJobs[$rowKey]['job_uriage'] = (string)$assigned[$rowKey];
+            continue;
+          }
 
-      foreach ($rowKeys as $rowKey) {
-        if (!isset($newJobs[$rowKey]) || !is_array($newJobs[$rowKey])) {
-          continue;
+          $newJobs[$rowKey]['job_syauri'] = (string)$assigned[$rowKey];
         }
-        $newJobs[$rowKey]['job_seikyu'] = (string)$assigned[$rowKey];
       }
     }
     }
@@ -432,8 +519,30 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
           continue;
         }
 
-        $targetTotal = (int)round((float)$editedValue);
-        if ($targetTotal === 0) {
+        $editedByMetric = [
+          'uriage' => 0,
+          'syauri' => 0,
+        ];
+
+        if (is_array($editedValue)) {
+          if (array_key_exists('uriage', $editedValue)) {
+            $editedByMetric['uriage'] = (int)round((float)$editedValue['uriage']);
+          } elseif (array_key_exists('seikyu', $editedValue)) {
+            $editedByMetric['uriage'] = (int)round((float)$editedValue['seikyu']);
+          }
+
+          if (array_key_exists('syauri', $editedValue)) {
+            $editedByMetric['syauri'] = (int)round((float)$editedValue['syauri']);
+          } elseif (array_key_exists('seikyu', $editedValue)) {
+            $editedByMetric['syauri'] = (int)round((float)$editedValue['seikyu']);
+          }
+        } else {
+          $legacyValue = (int)round((float)$editedValue);
+          $editedByMetric['uriage'] = $legacyValue;
+          $editedByMetric['syauri'] = $legacyValue;
+        }
+
+        if ($editedByMetric['uriage'] === 0 && $editedByMetric['syauri'] === 0) {
           continue;
         }
 
@@ -461,7 +570,9 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
         $newJob['job_name'] = (string)$baseJobName . '（' . $calendarYear . '年' . $month . '月分）';
         $newJob['job_start'] = $startDate;
         $newJob['job_end'] = $endDate;
-        $newJob['job_seikyu'] = (string)$targetTotal;
+        $newJob['job_uriage'] = (string)$editedByMetric['uriage'];
+        $newJob['job_syauri'] = (string)$editedByMetric['syauri'];
+        $newJob['job_seikyu'] = (string)$editedByMetric['uriage'];
 
         $baseKey = trim((string)($newJob['job_code'] ?? '') . '-' . (string)($newJob['job_jotai'] ?? ''), '-');
         if ($baseKey === '') {

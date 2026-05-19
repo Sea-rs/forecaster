@@ -81,6 +81,7 @@ $toNumber = static function (string $value): float {
 };
 
 $statusOrder = ['固定', '按分', '変動', 'その他'];
+$monthLabels = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
 $normalizeStatus = static function (string $status, string $jobKey): string {
   $status = trim($status);
   if (in_array($status, ['固定', '按分', '変動'], true)) {
@@ -130,15 +131,19 @@ if ($year > 0 && $registerName !== '') {
       $rowsByStatus[$jobStatus][$baseJobName] = [];
     }
 
-    if ($monthLabel === null || !in_array($monthLabel, $fiscalMonths, true)) {
+    if ($monthLabel === null || !in_array($monthLabel, $monthLabels, true)) {
       continue;
     }
 
     if (!array_key_exists($monthLabel, $rowsByStatus[$jobStatus][$baseJobName])) {
-      $rowsByStatus[$jobStatus][$baseJobName][$monthLabel] = 0.0;
+      $rowsByStatus[$jobStatus][$baseJobName][$monthLabel] = [
+        'uriage' => 0.0,
+        'syauri' => 0.0,
+      ];
     }
 
-    $rowsByStatus[$jobStatus][$baseJobName][$monthLabel] += $toNumber((string)($job['job_seikyu'] ?? ''));
+    $rowsByStatus[$jobStatus][$baseJobName][$monthLabel]['uriage'] += $toNumber((string)($job['job_uriage'] ?? ''));
+    $rowsByStatus[$jobStatus][$baseJobName][$monthLabel]['syauri'] += $toNumber((string)($job['job_syauri'] ?? ''));
   }
 
   foreach ($rowsByStatus as &$jobsByName) {
@@ -172,9 +177,25 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
       <thead>
       <tr>
         <th>ジョブ名</th>
-        <?php foreach ($monthLabels as $monthLabel): ?>
-        <th><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></th>
-        <?php endforeach; ?>
+        <th>区分</th>
+        <th>4月</th>
+        <th>5月</th>
+        <th>6月</th>
+        <th class="quarter-header">1Q</th>
+        <th>7月</th>
+        <th>8月</th>
+        <th>9月</th>
+        <th class="quarter-header">2Q</th>
+        <th class="half-year-header">1H</th>
+        <th>10月</th>
+        <th>11月</th>
+        <th>12月</th>
+        <th class="quarter-header">3Q</th>
+        <th>1月</th>
+        <th>2月</th>
+        <th>3月</th>
+        <th class="quarter-header">4Q</th>
+        <th class="half-year-header">2H</th>
       </tr>
       </thead>
       <tbody>
@@ -184,21 +205,47 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
           <?php continue; ?>
         <?php endif; ?>
         <tr class="status-separator">
-          <td colspan="<?= 1 + count($monthLabels) ?>"><?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?></td>
+          <td colspan="<?= 2 + count($monthLabels) + 6 ?>"><?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?></td>
         </tr>
       <?php foreach ($jobsByName as $jobName => $months): ?>
-        <tr>
-        <td><?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?></td>
-        <?php foreach ($monthLabels as $monthLabel): ?>
-          <?php $rawValue = (string)($months[$monthLabel] ?? '0'); ?>
-          <td class="editable-amount"
-            data-original-value="<?= htmlspecialchars($rawValue, ENT_QUOTES, 'UTF-8') ?>"
-            data-raw-value="<?= htmlspecialchars($rawValue, ENT_QUOTES, 'UTF-8') ?>"
+        <tr class="metric-row metric-uriage-row">
+        <td class="metric-name-cell" rowspan="2"><?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?></td>
+        <td class="metric-label-cell">売上</td>
+        <?php $i = 0; foreach ($monthLabels as $monthLabel): ?>
+          <?php $amounts = (array)($months[$monthLabel] ?? []); ?>
+          <?php $rawUriage = (string)($amounts['uriage'] ?? '0'); ?>
+          <td class="amount-cell editable-amount"
+            data-original-value="<?= htmlspecialchars($rawUriage, ENT_QUOTES, 'UTF-8') ?>"
+            data-raw-value="<?= htmlspecialchars($rawUriage, ENT_QUOTES, 'UTF-8') ?>"
             data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>"
             data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>"
             data-month="<?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?>"
-          ><?= htmlspecialchars($formatMoney($rawValue), ENT_QUOTES, 'UTF-8') ?></td>
-        <?php endforeach; ?>
+            data-metric="uriage"
+          ><?= htmlspecialchars($formatMoney($rawUriage), ENT_QUOTES, 'UTF-8') ?></td>
+          <?php if ($i === 2): ?><td class="quarter-value" data-quarter="1q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage">0</td><?php endif; ?>
+          <?php if ($i === 5): ?><td class="quarter-value" data-quarter="2q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage">0</td><td class="half-year-value" data-half="1h" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage">0</td><?php endif; ?>
+          <?php if ($i === 8): ?><td class="quarter-value" data-quarter="3q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage">0</td><?php endif; ?>
+          <?php if ($i === 11): ?><td class="quarter-value" data-quarter="4q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage">0</td><td class="half-year-value" data-half="2h" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage">0</td><?php endif; ?>
+          <?php $i++; endforeach; ?>
+        </tr>
+        <tr class="metric-row metric-syauri-row">
+        <td class="metric-label-cell">社売</td>
+        <?php $i = 0; foreach ($monthLabels as $monthLabel): ?>
+          <?php $amounts = (array)($months[$monthLabel] ?? []); ?>
+          <?php $rawSyauri = (string)($amounts['syauri'] ?? '0'); ?>
+          <td class="amount-cell editable-amount"
+            data-original-value="<?= htmlspecialchars($rawSyauri, ENT_QUOTES, 'UTF-8') ?>"
+            data-raw-value="<?= htmlspecialchars($rawSyauri, ENT_QUOTES, 'UTF-8') ?>"
+            data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>"
+            data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>"
+            data-month="<?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?>"
+            data-metric="syauri"
+          ><?= htmlspecialchars($formatMoney($rawSyauri), ENT_QUOTES, 'UTF-8') ?></td>
+          <?php if ($i === 2): ?><td class="quarter-value" data-quarter="1q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri">0</td><?php endif; ?>
+          <?php if ($i === 5): ?><td class="quarter-value" data-quarter="2q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri">0</td><td class="half-year-value" data-half="1h" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri">0</td><?php endif; ?>
+          <?php if ($i === 8): ?><td class="quarter-value" data-quarter="3q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri">0</td><?php endif; ?>
+          <?php if ($i === 11): ?><td class="quarter-value" data-quarter="4q" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri">0</td><td class="half-year-value" data-half="2h" data-job-status="<?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>" data-job-name="<?= htmlspecialchars((string)$jobName, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri">0</td><?php endif; ?>
+          <?php $i++; endforeach; ?>
         </tr>
       <?php endforeach; ?>
       <?php endforeach; ?>

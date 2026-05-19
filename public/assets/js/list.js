@@ -57,10 +57,11 @@
       const jobName = cell.dataset.jobName;
       const jobStatus = cell.dataset.jobStatus || 'その他';
       const month = cell.dataset.month;
+      const metric = cell.dataset.metric || 'seikyu';
       const normalizedFromText = normalizeValue(cell.textContent);
       const rawValue = normalizedFromText ?? String(cell.dataset.rawValue ?? '0');
 
-      if (!jobName || !month || !jobStatus) {
+      if (!jobName || !month || !jobStatus || !metric) {
         return;
       }
 
@@ -70,8 +71,11 @@
       if (!edits[jobStatus][jobName]) {
         edits[jobStatus][jobName] = {};
       }
+      if (!edits[jobStatus][jobName][month] || typeof edits[jobStatus][jobName][month] !== 'object') {
+        edits[jobStatus][jobName][month] = {};
+      }
 
-      edits[jobStatus][jobName][month] = rawValue;
+      edits[jobStatus][jobName][month][metric] = rawValue;
       cell.dataset.rawValue = rawValue;
     });
 

@@ -15,8 +15,9 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
   font-size: 14px;
+  margin-top: -1px;
+  margin-bottom: -1px;
 }
 
 th,
@@ -41,6 +42,34 @@ th {
   user-select: text;
 }
 
+.amount-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.quarter-value,
+.half-year-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: #f0fdfa;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.quarter-header,
+.half-year-header {
+  background: #d1f4f0;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.metric-label-cell {
+  text-align: center;
+  font-weight: 700;
+  color: #0f766e;
+  background: #f0fdfa;
+}
+
 .editable-amount.is-edited {
   background: #fef08a;
 }
@@ -58,6 +87,8 @@ th {
 }
 
 .table-wrap {
+  border-top: 1px solid #dbe3ee;
+  border-bottom: 1px solid #dbe3ee;
   overflow-x: auto;
   overflow-y: auto;
   max-height: 480px;
@@ -242,4 +273,12 @@ th {
   color: #1f2937;
   border-bottom: 2px solid #0f766e;
   padding-bottom: 8px;
+}
+
+.metric-row.metric-syauri-row:last-of-type td {
+  border-bottom: 0;
+}
+
+.metric-row:nth-last-of-type(2) .metric-name-cell {
+  border-bottom: 0;
 }

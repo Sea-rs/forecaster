@@ -59,12 +59,6 @@ window.ForecasterUI.closeModal = (modal) => {
 };
 
 (() => {
-  const editableCells = Array.from(document.querySelectorAll('.editable-amount'));
-
-  if (editableCells.length === 0) {
-    return;
-  }
-
   let activeCell = null;
 
   const normalizeValue = (value) => {
@@ -105,6 +99,8 @@ window.ForecasterUI.closeModal = (modal) => {
     cell.contentEditable = 'false';
     delete cell.dataset.editing;
 
+    document.dispatchEvent(new CustomEvent('forecaster:cell-updated'));
+
     if (activeCell === cell) {
       activeCell = null;
     }
@@ -129,22 +125,35 @@ window.ForecasterUI.closeModal = (modal) => {
     cell.focus();
   };
 
-  editableCells.forEach((cell) => {
-    cell.addEventListener('dblclick', (event) => {
+  document.addEventListener('dblclick', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.classList.contains('editable-amount')) {
+      return;
+    }
+
+    event.preventDefault();
+    beginEdit(target);
+  });
+
+  document.addEventListener('focusout', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.classList.contains('editable-amount')) {
+      return;
+    }
+
+    finishEdit(target);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.classList.contains('editable-amount')) {
+      return;
+    }
+
+    if (event.key === 'Enter') {
       event.preventDefault();
-      beginEdit(cell);
-    });
-
-    cell.addEventListener('blur', () => {
-      finishEdit(cell);
-    });
-
-    cell.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        cell.blur();
-      }
-    });
+      target.blur();
+    }
   });
 
   document.addEventListener('mousedown', (event) => {
@@ -273,6 +282,8 @@ window.ForecasterUI.closeModal = (modal) => {
     });
   };
 
+  window.ForecasterUI.updateAggregates = updateAggregates;
+
   // Initial calculation on page load
   updateAggregates();
 
@@ -283,4 +294,8 @@ window.ForecasterUI.closeModal = (modal) => {
       setTimeout(updateAggregates, 0);
     }
   }, true);
+
+  document.addEventListener('forecaster:cell-updated', () => {
+    updateAggregates();
+  });
 })();

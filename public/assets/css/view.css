@@ -246,6 +246,161 @@ th {
   margin-top: 10px;
 }
 
+.add-job-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #fbfefe;
+}
+
+.add-job-panel .subhead {
+  margin: 0 0 10px;
+}
+
+.add-job-main-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.add-job-main-row label {
+  font-weight: 600;
+}
+
+.add-job-main-row input[type="text"] {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 14px;
+  min-width: 260px;
+}
+
+.add-job-main-row select {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.add-job-metric-head {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 8px;
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+
+.metric-col {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.add-job-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.add-job-month-item {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e5eef5;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fff;
+  min-width: 0;
+}
+
+.metric-input-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.metric-input-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-input-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.add-job-month-item .month-label {
+  font-size: 13px;
+  color: #334155;
+}
+
+.add-job-month-item input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 4px 6px;
+  text-align: right;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.add-job-actions {
+  margin-top: 10px;
+}
+
+.secondary-btn {
+  appearance: none;
+  border: 1px solid #0f766e;
+  background: #fff;
+  color: #0f766e;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background: #eefaf8;
+}
+
+.added-jobs-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.added-job-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+}
+
+.added-job-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.added-job-meta span {
+  color: #475569;
+  font-size: 13px;
+}
+
 .save-form-row label {
   font-weight: 600;
   font-size: 14px;

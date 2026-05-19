@@ -16,6 +16,7 @@ if ($isSaveRequest) {
   $saveSourceRegister = trim((string)($_POST['save_source_register'] ?? ''));
   $saveNewRegister = trim((string)($_POST['save_new_register'] ?? ''));
   $cellEditsJson = (string)($_POST['cell_edits'] ?? '');
+  $addedJobsJson = (string)($_POST['added_jobs'] ?? '');
   $response = [
     'ok' => false,
     'message' => '',
@@ -32,12 +33,17 @@ if ($isSaveRequest) {
       $response['message'] = '登録名「' . $saveNewRegister . '」は既に存在します。別の登録名を入力してください。';
     } else {
       $cellEdits = [];
+      $addedJobs = [];
       $decoded = json_decode($cellEditsJson, true);
       if (is_array($decoded)) {
         $cellEdits = $decoded;
       }
+      $decodedAddedJobs = json_decode($addedJobsJson, true);
+      if (is_array($decodedAddedJobs)) {
+        $addedJobs = $decodedAddedJobs;
+      }
 
-      if (save_forecast_with_edits($saveYear, $saveSourceRegister, $saveNewRegister, $cellEdits)) {
+      if (save_forecast_with_edits($saveYear, $saveSourceRegister, $saveNewRegister, $cellEdits, $addedJobs)) {
         $response['ok'] = true;
         $response['message'] = '登録名「' . $saveNewRegister . '」として保存しました。';
         $response['viewUrl'] = '/view/list.php?year=' . $saveYear . '&register_name=' . rawurlencode($saveNewRegister);
@@ -259,6 +265,7 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
         <input type="hidden" name="save_year" value="<?= (int)$year ?>">
         <input type="hidden" name="save_source_register" value="<?= htmlspecialchars($registerName, ENT_QUOTES, 'UTF-8') ?>">
         <input type="hidden" name="cell_edits" id="cell-edits-input">
+        <input type="hidden" name="added_jobs" id="added-jobs-input">
         <div class="total-summary" aria-live="polite">
           <div class="total-item">
             <span class="total-label">売上合計</span>
@@ -267,6 +274,43 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
           <div class="total-item">
             <span class="total-label">社売合計</span>
             <span id="total-syauri" class="total-value" data-total-metric="syauri">0</span>
+          </div>
+        </div>
+        <div class="add-job-panel">
+          <h3 class="subhead">ジョブ追加</h3>
+          <div class="add-job-main-row">
+            <label for="add-job-status">区分</label>
+            <select id="add-job-status">
+              <option value="固定">固定</option>
+              <option value="按分">案分</option>
+              <option value="変動">変動</option>
+            </select>
+            <label for="add-job-name">ジョブ名</label>
+            <input type="text" id="add-job-name" maxlength="120" placeholder="ジョブ名を入力">
+          </div>
+          <div class="add-job-metric-head">
+            <span class="metric-col month-col">月</span>
+            <span class="metric-col">金額（売上 / 社売）</span>
+          </div>
+          <div class="add-job-month-grid">
+            <?php foreach ($monthLabels as $monthLabel): ?>
+            <div class="add-job-month-item">
+              <span class="month-label"><?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="metric-input-stack">
+                <span class="metric-input-row">
+                  <span class="metric-input-label">売上</span>
+                  <input type="text" class="add-job-month-input" data-month="<?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?>" data-metric="uriage" value="0" inputmode="numeric">
+                </span>
+                <span class="metric-input-row">
+                  <span class="metric-input-label">社売</span>
+                  <input type="text" class="add-job-month-input" data-month="<?= htmlspecialchars($monthLabel, ENT_QUOTES, 'UTF-8') ?>" data-metric="syauri" value="0" inputmode="numeric">
+                </span>
+              </span>
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <div class="add-job-actions">
+            <button type="button" id="add-job-button" class="secondary-btn">表に追加</button>
           </div>
         </div>
         <div class="save-form-row">

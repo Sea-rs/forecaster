@@ -192,7 +192,7 @@ function save_named_forecast_records(int $year, string $registerName, array $row
   return save_forecast_index($index);
 }
 
-function save_forecast_with_edits(int $year, string $sourceRegister, string $newRegister, array $cellEdits): bool
+function save_forecast_with_edits(int $year, string $sourceRegister, string $newRegister, array $cellEdits, array $addedJobs = []): bool
 {
   $monthPattern = '/（(\d{4})年(\d{1,2})月分）$/u';
   $fiscalMonths = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
@@ -364,6 +364,82 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
     }
 
     return $default;
+  };
+
+  $normalizedAddedJobs = [];
+  foreach ($addedJobs as $job) {
+    if (!is_array($job)) {
+      continue;
+    }
+
+    $jobName = trim((string)($job['jobName'] ?? ''));
+    if ($jobName === '') {
+      continue;
+    }
+
+    $jobStatus = trim((string)($job['status'] ?? ''));
+    if (!in_array($jobStatus, ['固定', '按分', '変動'], true)) {
+      $jobStatus = 'その他';
+    }
+
+    $months = $job['months'] ?? [];
+    if (!is_array($months)) {
+      continue;
+    }
+
+    $normalizedMonths = [];
+    foreach ($months as $monthLabel => $monthAmount) {
+      $monthLabel = (string)$monthLabel;
+      if (!in_array($monthLabel, $fiscalMonths, true)) {
+        continue;
+      }
+
+      $uriage = 0;
+      $syauri = 0;
+
+      if (is_array($monthAmount)) {
+        $uriage = (int)round($toFloat((string)($monthAmount['uriage'] ?? '0')));
+        $syauri = (int)round($toFloat((string)($monthAmount['syauri'] ?? '0')));
+      } else {
+        $legacy = (int)round($toFloat((string)$monthAmount));
+        $uriage = $legacy;
+        $syauri = $legacy;
+      }
+
+      $normalizedMonths[$monthLabel] = [
+        'uriage' => $uriage,
+        'syauri' => $syauri,
+      ];
+    }
+
+    if (count($normalizedMonths) === 0) {
+      continue;
+    }
+
+    $normalizedAddedJobs[] = [
+      'status' => $jobStatus,
+      'jobName' => $jobName,
+      'months' => $normalizedMonths,
+    ];
+  }
+
+  $generateAddedJobKey = static function (string $jobStatus) use (&$existingKeys): string {
+    while (true) {
+      $now = DateTimeImmutable::createFromFormat('U.u', sprintf('%.6F', microtime(true)));
+      if ($now === false) {
+        $timestamp = date('YmdHis');
+      } else {
+        $timestamp = $now->format('YmdHisu');
+      }
+
+      $jobKey = 'MPJ-' . $timestamp . '-' . $jobStatus;
+      if (!isset($existingKeys[$jobKey])) {
+        $existingKeys[$jobKey] = true;
+        return $jobKey;
+      }
+
+      usleep(1);
+    }
   };
 
   $forecast = load_forecast($year);
@@ -583,6 +659,55 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
         $existingKeys[$newKey] = true;
         $newJobs[$newKey] = $newJob;
       }
+    }
+  }
+
+  // ジョブ追加フォームで指定された新規ジョブを反映。
+  foreach ($normalizedAddedJobs as $addedJob) {
+    $jobStatus = (string)($addedJob['status'] ?? 'その他');
+    $jobName = (string)$addedJob['jobName'];
+    $months = (array)$addedJob['months'];
+
+    foreach ($fiscalMonths as $monthLabel) {
+      $monthData = $months[$monthLabel] ?? ['uriage' => 0, 'syauri' => 0];
+      $uriage = (int)($monthData['uriage'] ?? 0);
+      $syauri = (int)($monthData['syauri'] ?? 0);
+
+      if ($uriage === 0 && $syauri === 0) {
+        continue;
+      }
+
+      $month = $monthNumber($monthLabel);
+      if ($month === null) {
+        continue;
+      }
+
+      $calendarYear = $month >= 4 ? $year : $year + 1;
+      $startDate = sprintf('%d/%d/1', $calendarYear, $month);
+      $endDay = (int)date('t', strtotime(sprintf('%04d-%02d-01', $calendarYear, $month)));
+      $endDate = sprintf('%d/%d/%d', $calendarYear, $month, $endDay);
+
+      $newJob = [
+        'job_code' => 'NEW',
+        'job_name' => $jobName . '（' . $calendarYear . '年' . $month . '月分）',
+        'job_seikyusaki' => '',
+        'job_keiyaku' => '',
+        'job_type' => '',
+        'job_kakudo' => '',
+        'job_jotai' => $jobStatus,
+        'job_busyo' => '',
+        'job_start' => $startDate,
+        'job_end' => $endDate,
+        'job_seikyu' => (string)$uriage,
+        'job_uriage' => (string)$uriage,
+        'job_gaityuu' => '0',
+        'job_syauri' => (string)$syauri,
+        'job_genka' => '0',
+        'job_rieki' => '0',
+      ];
+
+      $newKey = $generateAddedJobKey($jobStatus);
+      $newJobs[$newKey] = $newJob;
     }
   }
 

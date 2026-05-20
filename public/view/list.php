@@ -46,7 +46,7 @@ if ($isSaveRequest) {
       if (save_forecast_with_edits($saveYear, $saveSourceRegister, $saveNewRegister, $cellEdits, $addedJobs)) {
         $response['ok'] = true;
         $response['message'] = '登録名「' . $saveNewRegister . '」として保存しました。';
-        $response['viewUrl'] = '/view/list.php?year=' . $saveYear . '&register_name=' . rawurlencode($saveNewRegister);
+        $response['viewUrl'] = app_url('/view/list.php?year=' . $saveYear . '&register_name=' . rawurlencode($saveNewRegister));
       } else {
         $response['message'] = '保存に失敗しました。';
       }
@@ -336,10 +336,10 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
     <?php endif; ?>
 
     <div class="nav">
-    <a href="/view/index.php">一覧へ戻る</a>
+    <a href="<?= htmlspecialchars(app_url('/view/index.php'), ENT_QUOTES, 'UTF-8') ?>">一覧へ戻る</a>
     </div>
   </div>
   </div>
-    <script src="/assets/js/common.js"></script>
-  <script src="/assets/js/list.js"></script>
+    <script src="<?= htmlspecialchars(app_url('/assets/js/common.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script src="<?= htmlspecialchars(app_url('/assets/js/list.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
   <?php render_page_end(); ?>

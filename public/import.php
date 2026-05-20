@@ -10,7 +10,7 @@ $tz = new DateTimeZone('Asia/Tokyo');
 $defaultRegisterYear = (int)(new DateTimeImmutable('now', $tz))->format('Y');
 $registerName = '';
 $showSuccessModal = false;
-$successViewUrl = '/view/index.php';
+$successViewUrl = app_url('/view/index.php');
 
 $now = new DateTimeImmutable('now', $tz);
 $fiscalStart = new DateTimeImmutable($now->format('Y') . '-04-01 00:00:00', $tz);
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($saved) {
           $message = count($rows) . '件のデータを取り込みました。（年度: ' . $registerYear . ' / 登録名: ' . $registerName . '）';
           $showSuccessModal = true;
-          $successViewUrl = '/view/list.php?year=' . (int)$registerYear . '&register_name=' . rawurlencode($registerName);
+          $successViewUrl = app_url('/view/list.php?year=' . (int)$registerYear . '&register_name=' . rawurlencode($registerName));
           $registerYear = $defaultRegisterYear;
           $registerName = '';
         } else {
@@ -122,12 +122,12 @@ render_page_start('FORECASTER | CSV取り込み', '/assets/css/import.css', 'imp
       <p class="msg ok"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></p>
       <div class="modal-nav">
         <a href="<?= htmlspecialchars($successViewUrl, ENT_QUOTES, 'UTF-8') ?>">今回の登録データを見る</a>
-        <a href="/view/index.php">登録名一覧へ</a>
-        <a href="/">TOPへ</a>
+        <a href="<?= htmlspecialchars(app_url('/view/index.php'), ENT_QUOTES, 'UTF-8') ?>">登録名一覧へ</a>
+        <a href="<?= htmlspecialchars(app_url('/'), ENT_QUOTES, 'UTF-8') ?>">TOPへ</a>
       </div>
     </div>
   </div>
-  <script src="/assets/js/common.js"></script>
+  <script src="<?= htmlspecialchars(app_url('/assets/js/common.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
   <script>
     (() => {
       const modal = document.getElementById('import-success-modal');

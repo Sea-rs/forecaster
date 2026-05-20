@@ -381,11 +381,11 @@ render_page_start('FORECASTER | Diff Compare', '/assets/css/diff_compare.css', '
     <?php endif; ?>
 
     <div class="nav">
-      <a href="/diff/index.php">比較選択へ戻る</a>
-      <a href="/view/index.php">登録名一覧へ</a>
+      <a href="<?= htmlspecialchars(app_url('/diff/index.php'), ENT_QUOTES, 'UTF-8') ?>">比較選択へ戻る</a>
+      <a href="<?= htmlspecialchars(app_url('/view/index.php'), ENT_QUOTES, 'UTF-8') ?>">登録名一覧へ</a>
     </div>
   </div>
 </div>
-<script src="/assets/js/common.js"></script>
-<script src="/assets/js/diff-compare.js"></script>
+<script src="<?= htmlspecialchars(app_url('/assets/js/common.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(app_url('/assets/js/diff-compare.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php render_page_end(); ?>

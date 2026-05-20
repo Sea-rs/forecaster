@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# /forecaster/ を public/index.php へ
+RewriteRule ^$ public/index.php [L,QSA]
+
+# /forecaster/public/* への直接アクセスはそのまま
+RewriteRule ^public/ - [L]
+
+# 実在しないパスは public 配下へ内部転送
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ public/$1 [L,QSA]

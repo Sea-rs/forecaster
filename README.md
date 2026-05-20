@@ -19,7 +19,7 @@ PHP + JSONで構成した最小実装です。
 
 1. プロジェクト直下で実行
 
-   php -S localhost:8000 -t public
+   php -S localhost:8000 router.php
 
 2. ブラウザで開く
 

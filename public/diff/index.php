@@ -53,7 +53,7 @@ render_page_start('FORECASTER | Diff Index', '/assets/css/diff.css', 'diff', 'di
       id="diff-select-form"
       class="diff-select-form"
       method="get"
-      action="/diff/compare.php"
+      action="<?= htmlspecialchars(app_url('/diff/compare.php'), ENT_QUOTES, 'UTF-8') ?>"
       data-register-map="<?= htmlspecialchars((string)json_encode($compareRegistersByYear, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') ?>"
     >
       <label class="diff-field">
@@ -85,11 +85,11 @@ render_page_start('FORECASTER | Diff Index', '/assets/css/diff.css', 'diff', 'di
     <?php endif; ?>
 
     <div class="nav">
-      <a href="/view/index.php">登録名一覧へ</a>
-      <a href="/">TOPへ</a>
+      <a href="<?= htmlspecialchars(app_url('/view/index.php'), ENT_QUOTES, 'UTF-8') ?>">登録名一覧へ</a>
+      <a href="<?= htmlspecialchars(app_url('/'), ENT_QUOTES, 'UTF-8') ?>">TOPへ</a>
     </div>
   </div>
 </div>
-<script src="/assets/js/common.js"></script>
-<script src="/assets/js/diff-index.js"></script>
+<script src="<?= htmlspecialchars(app_url('/assets/js/common.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(app_url('/assets/js/diff-index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php render_page_end(); ?>

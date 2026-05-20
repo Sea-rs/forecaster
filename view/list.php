@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/src/layout.php';
 
 $year = (int)($_GET['year'] ?? 0);
 $registerName = trim((string)($_GET['register_name'] ?? ''));
+$saveError = '';
 
 $isSaveRequest = $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save';
 $isApiRequest = str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')
@@ -48,7 +49,8 @@ if ($isSaveRequest) {
         $response['message'] = '登録名「' . $saveNewRegister . '」として保存しました。';
         $response['viewUrl'] = app_url('/view/list.php?year=' . $saveYear . '&register_name=' . rawurlencode($saveNewRegister));
       } else {
-        $response['message'] = '保存に失敗しました。';
+        $storageError = get_forecaster_error();
+        $response['message'] = $storageError !== '' ? $storageError : '保存に失敗しました。';
       }
     }
   }
@@ -57,6 +59,14 @@ if ($isSaveRequest) {
     header('Content-Type: application/json; charset=UTF-8');
     echo json_encode($response, JSON_UNESCAPED_UNICODE);
     exit;
+  } else {
+    if ($response['ok']) {
+      // Redirect to the new register on success
+      header('Location: ' . $response['viewUrl']);
+      exit;
+    } else {
+      $saveError = $response['message'];
+    }
   }
 }
 
@@ -170,6 +180,10 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
   <div class="wrap">
   <div class="panel">
     <h1>登録データ表示</h1>
+
+    <?php if ($saveError !== ''): ?>
+    <div class="msg ng"><?= htmlspecialchars($saveError, ENT_QUOTES, 'UTF-8') ?></div>
+    <?php endif; ?>
 
     <?php if ($year <= 0 || $registerName === ''): ?>
     <p>年度と登録名を指定してください。</p>

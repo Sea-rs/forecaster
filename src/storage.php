@@ -1,6 +1,29 @@
 <?php
 declare(strict_types=1);
 
+global $forecasterLastError;
+if (!isset($forecasterLastError)) {
+  $forecasterLastError = '';
+}
+
+function get_forecaster_error(): string
+{
+  global $forecasterLastError;
+  return $forecasterLastError;
+}
+
+function set_forecaster_error(string $message): void
+{
+  global $forecasterLastError;
+  $forecasterLastError = $message;
+}
+
+function clear_forecaster_error(): void
+{
+  global $forecasterLastError;
+  $forecasterLastError = '';
+}
+
 function index_file_path(): string
 {
   return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'index.json';
@@ -34,15 +57,26 @@ function save_forecast(int $year, array $forecastData): bool
   $dir = dirname($path);
 
   if (!is_dir($dir)) {
-    mkdir($dir, 0777, true);
+    if (!mkdir($dir, 0777, true)) {
+      set_forecaster_error('ディレクトリ作成に失敗しました: ' . $path);
+      return false;
+    }
   }
 
   $json = json_encode($forecastData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
   if ($json === false) {
+    set_forecaster_error('JSON エンコードに失敗しました: ' . json_last_error_msg());
     return false;
   }
 
-  return file_put_contents($path, $json, LOCK_EX) !== false;
+  $result = file_put_contents($path, $json, LOCK_EX);
+  if ($result === false) {
+    set_forecaster_error('JSON ファイル保存に失敗しました: ' . $path);
+    return false;
+  }
+
+  clear_forecaster_error();
+  return true;
 }
 
 function load_forecast_index(): array
@@ -68,15 +102,26 @@ function save_forecast_index(array $fileNames): bool
   $dir = dirname($path);
 
   if (!is_dir($dir)) {
-    mkdir($dir, 0777, true);
+    if (!mkdir($dir, 0777, true)) {
+      set_forecaster_error('ディレクトリ作成に失敗しました: ' . $path);
+      return false;
+    }
   }
 
   $json = json_encode(array_values($fileNames), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
   if ($json === false) {
+    set_forecaster_error('JSON エンコードに失敗しました: ' . json_last_error_msg());
     return false;
   }
 
-  return file_put_contents($path, $json, LOCK_EX) !== false;
+  $result = file_put_contents($path, $json, LOCK_EX);
+  if ($result === false) {
+    set_forecaster_error('インデックス ファイル保存に失敗しました: ' . $path);
+    return false;
+  }
+
+  clear_forecaster_error();
+  return true;
 }
 
 function register_name_exists(int $year, string $registerName): bool

@@ -76,7 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $registerYear = $defaultRegisterYear;
           $registerName = '';
         } else {
-          $error = 'JSON保存に失敗しました。';
+          $storageError = get_forecaster_error();
+          $error = $storageError !== '' ? $storageError : 'JSON保存に失敗しました。';
         }
       }
     }

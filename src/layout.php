@@ -9,21 +9,33 @@ function app_base_path(): string
   }
 
   $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
-  $baseDir = str_replace('\\', '/', dirname($scriptName));
+  $scriptFilename = realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) ?: '';
+  $appRoot = realpath(dirname(__DIR__)) ?: '';
 
-  if ($baseDir === '/' || $baseDir === '.' || $baseDir === '\\') {
-    $baseDir = '';
+  if ($scriptName !== '' && $scriptFilename !== '' && $appRoot !== '') {
+    $appRootNorm = str_replace('\\', '/', $appRoot);
+    $scriptNorm = str_replace('\\', '/', $scriptFilename);
+
+    if (str_starts_with($scriptNorm, $appRootNorm)) {
+      $relativeFs = ltrim(substr($scriptNorm, strlen($appRootNorm)), '/');
+      $relativeWeb = '/' . str_replace('\\', '/', $relativeFs);
+
+      if ($relativeWeb !== '/' && str_ends_with($scriptName, $relativeWeb)) {
+        $base = substr($scriptName, 0, -strlen($relativeWeb));
+        if ($base === false || $base === '/' || $base === '.') {
+          $base = '';
+        }
+        if ($base !== '' && $base[0] !== '/') {
+          $base = '/' . $base;
+        }
+        $cached = rtrim($base, '/');
+        return $cached;
+      }
+    }
   }
 
-  if ($baseDir !== '' && str_ends_with($baseDir, '/public')) {
-    $baseDir = substr($baseDir, 0, -7);
-  }
-
-  if ($baseDir !== '' && $baseDir[0] !== '/') {
-    $baseDir = '/' . $baseDir;
-  }
-
-  $cached = rtrim($baseDir, '/');
+  // Fallback: cannot resolve mapping, keep root-relative behavior.
+  $cached = '';
   return $cached;
 }
 

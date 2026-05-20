@@ -1,0 +1,71 @@
+body {
+  background: #f8fafc;
+}
+
+.diff-index-page .wrap {
+  max-width: 980px;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 22px;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.diff-select-form {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(170px, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.diff-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diff-field span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.diff-field select {
+  min-height: 38px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.diff-go-btn {
+  appearance: none;
+  border: 1px solid #0f766e;
+  background: #0f766e;
+  color: #fff;
+  border-radius: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.diff-go-btn:hover {
+  background: #0d665f;
+}
+
+@media (max-width: 720px) {
+  .diff-select-form {
+    grid-template-columns: 1fr;
+  }
+
+  .diff-go-btn {
+    width: 100%;
+  }
+}

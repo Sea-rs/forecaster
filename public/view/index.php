@@ -52,6 +52,7 @@ foreach ($registersByYear as $names) {
   <div class="panel">
     <h1>登録名一覧</h1>
     <p class="muted">登録名件数: <?= $registerCount ?> 件</p>
+    <p class="muted"><a href="/diff/index.php">差分比較ページへ移動</a></p>
 
     <?php if ($message !== ''): ?>
     <div class="msg ok"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></div>
@@ -85,7 +86,6 @@ foreach ($registersByYear as $names) {
     </div>
     <?php endforeach; ?>
     <?php endif; ?>
-
 
   </div>
 </div>

@@ -15,6 +15,7 @@ render_page_start('FORECASTER | TOP', '/assets/css/index.css');
   <div class="links">
     <a href="/import.php">CSV取り込みページへ</a>
     <a href="/view/index.php">Viewページへ</a>
+    <a href="/diff/index.php">差分比較ページへ</a>
   </div>
   <p class="sub">次段でデータ検証・検索・集計機能を拡張予定です。</p>
   </div>

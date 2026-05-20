@@ -9,6 +9,7 @@ function render_page_start(string $title, string $pageStylesheet, string $active
   $menuItems = [
     'import' => ['label' => 'CSV取り込み', 'href' => '/import.php'],
     'view' => ['label' => '登録名一覧', 'href' => '/view/index.php'],
+    'diff' => ['label' => '差分比較', 'href' => '/diff/index.php'],
   ];
 
   $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');

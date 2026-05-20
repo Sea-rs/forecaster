@@ -1,0 +1,374 @@
+body {
+  background: #f8fafc;
+}
+
+.diff-compare-page .wrap {
+  max-width: 1920px;
+  box-sizing: border-box;
+  padding: 26px;
+}
+
+.test-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fbbf24;
+  color: #1f2937;
+  border-radius: 4px;
+  padding: 2px 7px;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0 0 16px;
+}
+
+.compare-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+}
+
+.compare-register-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.compare-vs {
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.register-badge,
+.register-badge-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.register-badge {
+  min-width: 34px;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.register-badge-sm {
+  min-width: 24px;
+  height: 18px;
+  padding: 0 6px;
+  font-size: 10px;
+}
+
+.badge-new { background: #16a34a; }
+.badge-old { background: #ef4444; }
+.badge-job { background: #334155; }
+
+.msg.ng {
+  margin: 0 0 12px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 14px;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.total-diff-summary {
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.total-diff-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 10px;
+}
+
+.total-diff-items {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.total-diff-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 200px;
+}
+
+.total-diff-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  background: #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.total-diff-value {
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  background: #e2e8f0;
+  border: 1px solid #94a3b8;
+  border-radius: 8px 8px 0 0;
+  padding: 7px 14px;
+  margin-top: 24px;
+  margin-bottom: 0;
+  letter-spacing: 0.04em;
+}
+
+.group-header--addremove {
+  background: #fef9c3;
+  color: #713f12;
+  border-color: #ca8a04;
+}
+
+.group-count {
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  color: #64748b;
+}
+
+.job-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #94a3b8;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.job-card {
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+}
+
+.job-card--changed .job-card-header {
+  background: #f8fafc;
+  border-left: 4px solid #6366f1;
+}
+
+.job-card--only-new .job-card-header {
+  background: #f0fdf4;
+  border-left: 4px solid #16a34a;
+}
+
+.job-card--only-old .job-card-header {
+  background: #fff5f5;
+  border-left: 4px solid #ef4444;
+}
+
+.job-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+}
+
+.job-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  flex: 1;
+}
+
+.job-badge {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.badge-changed { background: #ede9fe; color: #5b21b6; }
+.badge-only-new { background: #dcfce7; color: #166534; }
+.badge-only-old { background: #fee2e2; color: #991b1b; }
+
+.job-card-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 20px 14px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+}
+
+.job-card--only-new .job-card-summary { background: #f0fdf4; }
+.job-card--only-old .job-card-summary { background: #fff5f5; }
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-metric {
+  color: #475569;
+  font-weight: 700;
+  font-size: 12px;
+  min-width: 3em;
+  background: #e2e8f0;
+  border-radius: 3px;
+  padding: 2px 7px;
+  text-align: center;
+}
+
+.summary-diff,
+.summary-total {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.summary-months {
+  font-size: 11px;
+  color: #6366f1;
+  background: #ede9fe;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
+.job-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6366f1;
+  background: #f5f3ff;
+  border-top: 1px solid #e0e7ff;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.toggle-icon {
+  font-size: 9px;
+}
+
+.job-card-body {
+  padding: 0 0 10px;
+}
+
+.job-table-wrap {
+  overflow-x: auto;
+}
+
+table.job-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.job-diff-table th,
+table.job-diff-table td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  white-space: nowrap;
+  text-align: right;
+  vertical-align: middle;
+}
+
+table.job-diff-table thead th {
+  background: #f8fafc;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+  border-bottom: 2px solid #dbe3ee;
+}
+
+.col-metric {
+  text-align: center !important;
+  font-weight: 700;
+  font-size: 12px;
+  color: #0f766e;
+  background: #f0fdf9 !important;
+  width: 44px;
+  min-width: 44px;
+  border-right: 2px solid #a7f3d0 !important;
+}
+
+.col-ver {
+  text-align: center !important;
+  width: 34px;
+  min-width: 34px;
+  background: #fafafa !important;
+  border-right: 2px solid #dbe3ee !important;
+}
+
+.row-ver-new td { background: #fafeff; }
+.row-ver-old td { background: #fffaf5; }
+.row-diff td { background: #f8fafc; font-size: 12px; }
+
+.side-new { background: #eff6ff !important; }
+.side-old { background: #fff7ed !important; }
+
+.diff-ver-label {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.metric-sep td {
+  height: 6px;
+  padding: 0 !important;
+  background: #f1f5f9 !important;
+  border-left: none;
+  border-right: none;
+}
+
+.amount-cell {
+  font-variant-numeric: tabular-nums;
+  min-width: 72px;
+}
+
+.diff-same { background-color: inherit; color: inherit; }
+.diff-added { background: #fef3c7 !important; color: #92400e; font-weight: 600; }
+.diff-removed { background: #fee2e2 !important; color: #991b1b; font-weight: 600; text-decoration: line-through; }
+.diff-up { background: #dcfce7 !important; color: #166534; font-weight: 600; }
+.diff-down { background: #fee2e2 !important; color: #991b1b; font-weight: 600; }
+
+.diff-delta {
+  font-size: 12px;
+}

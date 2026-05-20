@@ -11,15 +11,15 @@ PHP + JSONで構成した最小実装です。
 
 ## ディレクトリ
 
-- public/: 公開ページ
+- index.php / import.php / view/ / diff/ / assets/: 公開ページ
 - src/: アプリ内部ロジック
-- data/records.json: 擬似DB
+- data/: 保存データ
 
 ## 起動方法（ローカル確認）
 
 1. プロジェクト直下で実行
 
-   php -S localhost:8000 router.php
+   php -S localhost:8000
 
 2. ブラウザで開く
 

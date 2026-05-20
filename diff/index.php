@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require_once dirname(__DIR__, 2) . '/src/storage.php';
-require_once dirname(__DIR__, 2) . '/src/layout.php';
+require_once dirname(__DIR__) . '/src/storage.php';
+require_once dirname(__DIR__) . '/src/layout.php';
 
 $registersByYear = [];
 $files = array_reverse(load_forecast_index());

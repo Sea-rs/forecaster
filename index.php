@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/src/layout.php';
+require_once __DIR__ . '/src/layout.php';
 
 render_page_start('FORECASTER | TOP', '/assets/css/index.css');
 ?>

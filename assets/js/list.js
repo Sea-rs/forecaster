@@ -332,7 +332,7 @@
       const jobStatus = addJobStatusInput ? String(addJobStatusInput.value || '') : '';
       const jobName = addJobNameInput.value.trim();
       if (!statusOrder.includes(jobStatus) || jobStatus === 'その他') {
-        openResultModal(false, '区分は「固定」「案分」「変動」から選択してください。');
+        openResultModal(false, '区分は「固定」「按分」「変動」から選択してください。');
         return;
       }
       if (jobName === '') {

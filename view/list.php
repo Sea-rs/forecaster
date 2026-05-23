@@ -342,7 +342,7 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
             <label for="add-job-status">区分</label>
             <select id="add-job-status">
               <option value="固定">固定</option>
-              <option value="按分">案分</option>
+              <option value="按分">按分</option>
               <option value="変動">変動</option>
             </select>
             <label for="add-job-name">ジョブ名</label>

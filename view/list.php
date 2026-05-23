@@ -70,8 +70,29 @@ if ($isSaveRequest) {
   }
 }
 
-$monthPattern = '/(\d{4})年(\d{1,2})月分）$/u';
+$monthPattern = '/(\d{4})年(\d{1,2})月/u';
 $fiscalMonths = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
+$stripMonthFromJobName = static function (string $jobName) use ($monthPattern): string {
+  $result = preg_replace_callback('/([（(])([^）)]*)([）)])/u', static function (array $m) use ($monthPattern): string {
+    $inner = (string)$m[2];
+
+    if (preg_match($monthPattern, $inner) !== 1) {
+      return (string)$m[0];
+    }
+
+    if (preg_match('/^\s*\d{4}年\d{1,2}月/u', $inner) === 1) {
+      return '';
+    }
+
+    $newInner = trim((string)(preg_replace($monthPattern, '', $inner) ?? $inner));
+    return (string)$m[1] . $newInner . (string)$m[3];
+  }, $jobName);
+
+  $result = is_string($result) ? $result : $jobName;
+  $result = trim((string)(preg_replace($monthPattern, '', $result) ?? $result));
+  $result = trim((string)(preg_replace('/[（(][\s_-]*[）)]/u', '', $result) ?? $result));
+  return trim((string)(preg_replace('/[（）()]+$/u', '', $result) ?? $result));
+};
 
 $formatMoney = static function (string $value): string {
   $value = trim($value);
@@ -133,8 +154,7 @@ if ($year > 0 && $registerName !== '') {
 
     if ($jobName !== '' && preg_match($monthPattern, $jobName, $monthMatches) === 1) {
       $monthLabel = (int)$monthMatches[2] . '月';
-      $baseJobName = trim((string)(preg_replace($monthPattern, '', $jobName) ?? $jobName));
-      $baseJobName = trim((string)(preg_replace('/[（）()]+$/u', '', $baseJobName) ?? $baseJobName));
+      $baseJobName = $stripMonthFromJobName($jobName);
     }
 
     if ($baseJobName === '') {

@@ -19,7 +19,28 @@ $toNumber = static function (string $value): float {
 };
 
 $buildRegisterJobMonths = static function (array $registerData) use ($monthLabels, $toNumber): array {
-  $monthPattern = '/(\d{4})年(\d{1,2})月分）$/u';
+  $monthPattern = '/(\d{4})年(\d{1,2})月/u';
+  $stripMonthFromJobName = static function (string $jobName) use ($monthPattern): string {
+    $result = preg_replace_callback('/([（(])([^）)]*)([）)])/u', static function (array $m) use ($monthPattern): string {
+      $inner = (string)$m[2];
+
+      if (preg_match($monthPattern, $inner) !== 1) {
+        return (string)$m[0];
+      }
+
+      if (preg_match('/^\s*\d{4}年\d{1,2}月/u', $inner) === 1) {
+        return '';
+      }
+
+      $newInner = trim((string)(preg_replace($monthPattern, '', $inner) ?? $inner));
+      return (string)$m[1] . $newInner . (string)$m[3];
+    }, $jobName);
+
+    $result = is_string($result) ? $result : $jobName;
+    $result = trim((string)(preg_replace($monthPattern, '', $result) ?? $result));
+    $result = trim((string)(preg_replace('/[（(][\s_-]*[）)]/u', '', $result) ?? $result));
+    return trim((string)(preg_replace('/[（）()]+$/u', '', $result) ?? $result));
+  };
   $result = [];
 
   foreach ($registerData as $jobKey => $job) {
@@ -33,7 +54,7 @@ $buildRegisterJobMonths = static function (array $registerData) use ($monthLabel
 
     if ($jobName !== '' && preg_match($monthPattern, $jobName, $m) === 1) {
       $monthLabel = (int)$m[2] . '月';
-      $baseName = trim((string)(preg_replace($monthPattern, '', $jobName) ?? $jobName));
+      $baseName = $stripMonthFromJobName($jobName);
     }
 
     if ($baseName === '') {

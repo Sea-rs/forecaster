@@ -80,15 +80,13 @@ $stripMonthFromJobName = static function (string $jobName) use ($monthPattern): 
       return (string)$m[0];
     }
 
-    if (preg_match('/^\s*\d{4}年\d{1,2}月/u', $inner) === 1) {
-      return '';
-    }
-
-    $newInner = trim((string)(preg_replace($monthPattern, '', $inner) ?? $inner));
-    return (string)$m[1] . $newInner . (string)$m[3];
+    return '';
   }, $jobName);
 
   $result = is_string($result) ? $result : $jobName;
+  if ($result === '') {
+    $result = trim((string)(preg_replace($monthPattern, '', $jobName) ?? $jobName));
+  }
   $result = trim((string)(preg_replace($monthPattern, '', $result) ?? $result));
   $result = trim((string)(preg_replace('/[（(][\s_-]*[）)]/u', '', $result) ?? $result));
   return trim((string)(preg_replace('/[（）()]+$/u', '', $result) ?? $result));

@@ -19,7 +19,7 @@ $toNumber = static function (string $value): float {
 };
 
 $buildRegisterJobMonths = static function (array $registerData) use ($monthLabels, $toNumber): array {
-  $monthPattern = '/（(\d{4})年(\d{1,2})月分）$/u';
+  $monthPattern = '/(\d{4})年(\d{1,2})月分）$/u';
   $result = [];
 
   foreach ($registerData as $jobKey => $job) {

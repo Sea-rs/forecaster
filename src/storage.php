@@ -239,7 +239,7 @@ function save_named_forecast_records(int $year, string $registerName, array $row
 
 function save_forecast_with_edits(int $year, string $sourceRegister, string $newRegister, array $cellEdits, array $addedJobs = []): bool
 {
-  $monthPattern = '/（(\d{4})年(\d{1,2})月分）$/u';
+  $monthPattern = '/(\d{4})年(\d{1,2})月分）$/u';
   $fiscalMonths = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
   $statusValues = ['固定', '按分', '変動', 'その他'];
 

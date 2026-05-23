@@ -70,7 +70,7 @@ if ($isSaveRequest) {
   }
 }
 
-$monthPattern = '/（(\d{4})年(\d{1,2})月分）$/u';
+$monthPattern = '/(\d{4})年(\d{1,2})月分）$/u';
 $fiscalMonths = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
 
 $formatMoney = static function (string $value): string {
@@ -134,6 +134,7 @@ if ($year > 0 && $registerName !== '') {
     if ($jobName !== '' && preg_match($monthPattern, $jobName, $monthMatches) === 1) {
       $monthLabel = (int)$monthMatches[2] . '月';
       $baseJobName = trim((string)(preg_replace($monthPattern, '', $jobName) ?? $jobName));
+      $baseJobName = trim((string)(preg_replace('/[（）()]+$/u', '', $baseJobName) ?? $baseJobName));
     }
 
     if ($baseJobName === '') {

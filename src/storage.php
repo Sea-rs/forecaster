@@ -6,6 +6,46 @@ if (!isset($forecasterLastError)) {
   $forecasterLastError = '';
 }
 
+function get_fixed_status_keywords(): array
+{
+  $defaultKeywords = [];
+  $path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'fixed_status_keywords.json';
+
+  if (!file_exists($path)) {
+    return $defaultKeywords;
+  }
+
+  $raw = file_get_contents($path);
+  if ($raw === false || trim($raw) === '') {
+    return $defaultKeywords;
+  }
+
+  $decoded = json_decode($raw, true);
+  if (!is_array($decoded)) {
+    return $defaultKeywords;
+  }
+
+  $keywords = [];
+  foreach ($decoded as $value) {
+    if (!is_string($value)) {
+      continue;
+    }
+
+    $keyword = trim($value);
+    if ($keyword === '') {
+      continue;
+    }
+
+    $keywords[] = $keyword;
+  }
+
+  if (count($keywords) === 0) {
+    return $defaultKeywords;
+  }
+
+  return array_values(array_unique($keywords));
+}
+
 function get_forecaster_error(): string
 {
   global $forecasterLastError;
@@ -242,6 +282,7 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
   $monthPattern = '/(\d{4})年(\d{1,2})月/u';
   $fiscalMonths = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
   $statusValues = ['固定', '按分', '変動', 'その他'];
+  $fixedStatusKeywords = get_fixed_status_keywords();
   $stripMonthFromJobName = static function (string $jobName) use ($monthPattern): string {
     $result = preg_replace_callback('/([（(])([^）)]*)([）)])/u', static function (array $m) use ($monthPattern): string {
       $inner = (string)$m[2];
@@ -300,8 +341,26 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
     return $month;
   };
 
-  $normalizeStatus = static function (string $status, string $jobKey) use ($statusValues): string {
+  $hasFixedStatusKeyword = static function (string $jobName) use ($fixedStatusKeywords): bool {
+    foreach ($fixedStatusKeywords as $keyword) {
+      if ($keyword !== '' && mb_strpos($jobName, $keyword) !== false) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  $normalizeStatus = static function (string $status, string $jobKey, string $jobName = '') use ($statusValues, $hasFixedStatusKeyword): string {
     $status = trim($status);
+    if ($status === '固定') {
+      return '固定';
+    }
+
+    if ($jobName !== '' && $hasFixedStatusKeyword($jobName)) {
+      return '固定';
+    }
+
     if (in_array($status, $statusValues, true)) {
       return $status;
     }
@@ -525,7 +584,11 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
 
     $existingKeys[(string)$jobKey] = true;
 
-    $jobStatus = $normalizeStatus((string)($job['job_jotai'] ?? ''), (string)$jobKey);
+    $jobStatus = $normalizeStatus(
+      (string)($job['job_jotai'] ?? ''),
+      (string)$jobKey,
+      trim((string)($job['job_name'] ?? ''))
+    );
 
     [$baseJobName, $monthLabel] = $extractJobMeta(
       trim((string)($job['job_name'] ?? '')),
@@ -687,7 +750,11 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
         }
 
         $resolvedStatus = $jobStatus === '__legacy__'
-          ? $normalizeStatus((string)($templatesByAnyStatus[$baseJobName]['job_jotai'] ?? ''), '')
+          ? $normalizeStatus(
+            (string)($templatesByAnyStatus[$baseJobName]['job_jotai'] ?? ''),
+            '',
+            trim((string)($templatesByAnyStatus[$baseJobName]['job_name'] ?? ''))
+          )
           : $jobStatus;
 
         $template = $templatesByJob[$resolvedStatus][$baseJobName] ?? ($templatesByAnyStatus[$baseJobName] ?? null);

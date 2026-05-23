@@ -117,8 +117,27 @@ $toNumber = static function (string $value): float {
 
 $statusOrder = ['固定', '按分', '変動', 'その他'];
 $monthLabels = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
-$normalizeStatus = static function (string $status, string $jobKey): string {
+$fixedStatusKeywords = get_fixed_status_keywords();
+$hasFixedStatusKeyword = static function (string $jobName) use ($fixedStatusKeywords): bool {
+  foreach ($fixedStatusKeywords as $keyword) {
+    if ($keyword !== '' && mb_strpos($jobName, $keyword) !== false) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+$normalizeStatus = static function (string $status, string $jobKey, string $jobName = '') use ($hasFixedStatusKeyword): string {
   $status = trim($status);
+  if ($status === '固定') {
+    return '固定';
+  }
+
+  if ($jobName !== '' && $hasFixedStatusKeyword($jobName)) {
+    return '固定';
+  }
+
   if (in_array($status, ['固定', '按分', '変動'], true)) {
     return $status;
   }
@@ -144,7 +163,11 @@ if ($year > 0 && $registerName !== '') {
       continue;
     }
 
-    $jobStatus = $normalizeStatus((string)($job['job_jotai'] ?? ''), (string)$jobKey);
+    $jobStatus = $normalizeStatus(
+      (string)($job['job_jotai'] ?? ''),
+      (string)$jobKey,
+      trim((string)($job['job_name'] ?? ''))
+    );
 
     $jobName = trim((string)($job['job_name'] ?? ''));
     $baseJobName = $jobName;

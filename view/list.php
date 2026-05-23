@@ -134,6 +134,10 @@ $normalizeStatus = static function (string $status, string $jobKey, string $jobN
     return '固定';
   }
 
+  if ($status === '按分') {
+    return '按分';
+  }
+
   if ($jobName !== '' && $hasFixedStatusKeyword($jobName)) {
     return '固定';
   }

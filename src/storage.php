@@ -357,6 +357,10 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
       return '固定';
     }
 
+    if ($status === '按分') {
+      return '按分';
+    }
+
     if ($jobName !== '' && $hasFixedStatusKeyword($jobName)) {
       return '固定';
     }

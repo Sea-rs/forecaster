@@ -7,6 +7,56 @@ require_once dirname(__DIR__) . '/src/layout.php';
 $year = (int)($_GET['year'] ?? 0);
 $registerName = trim((string)($_GET['register_name'] ?? ''));
 $saveError = '';
+$featureError = '';
+
+$normalizeBudgetInput = static function (string $value): string {
+  $normalized = str_replace(',', '', trim($value));
+  if ($normalized === '') {
+    return '';
+  }
+
+  if (preg_match('/^-?\d+(?:\.\d+)?$/', $normalized) !== 1) {
+    return '';
+  }
+
+  return (string)((int)round((float)$normalized));
+};
+
+$featureBudget = [
+  '1h' => '',
+  '2h' => '',
+];
+
+$forecastForFeature = $year > 0 ? load_forecast($year) : [];
+if ($year > 0 && $registerName !== '') {
+  $featureBudget = get_register_feature($forecastForFeature, $registerName);
+}
+
+$isFeatureSaveRequest = $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_feature';
+
+if ($isFeatureSaveRequest) {
+  $featureYear = (int)($_POST['feature_year'] ?? 0);
+  $featureRegisterName = trim((string)($_POST['feature_register_name'] ?? ''));
+  $input1h = $normalizeBudgetInput((string)($_POST['feature_1h'] ?? ''));
+  $input2h = $normalizeBudgetInput((string)($_POST['feature_2h'] ?? ''));
+
+  if ($featureYear <= 0 || $featureRegisterName === '') {
+    $featureError = '予算保存対象の年度または登録名が不正です。';
+  } else {
+    $featurePayload = [
+      '1h' => $input1h,
+      '2h' => $input2h,
+    ];
+
+    if (save_register_feature($featureYear, $featureRegisterName, $featurePayload)) {
+      if ($featureYear === $year && $featureRegisterName === $registerName) {
+        $featureBudget = $featurePayload;
+      }
+    } else {
+      $featureError = '予算保存に失敗しました。';
+    }
+  }
+}
 
 $isSaveRequest = $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save';
 $isApiRequest = str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')
@@ -158,11 +208,13 @@ $monthLabels = $fiscalMonths;
 
 if ($year > 0 && $registerName !== '') {
   $forecast = load_forecast($year);
-  if (!isset($forecast[$registerName]) || !is_array($forecast[$registerName])) {
+  $registerJobs = get_register_jobs($forecast, $registerName);
+
+  if (count($registerJobs) === 0) {
     $forecast = [];
   }
 
-  foreach ($forecast[$registerName] ?? [] as $jobKey => $job) {
+  foreach ($registerJobs as $jobKey => $job) {
     if (!is_array($job)) {
       continue;
     }
@@ -229,6 +281,10 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
 
     <?php if ($saveError !== ''): ?>
     <div class="msg ng"><?= htmlspecialchars($saveError, ENT_QUOTES, 'UTF-8') ?></div>
+    <?php endif; ?>
+
+    <?php if ($featureError !== ''): ?>
+    <div class="msg ng"><?= htmlspecialchars($featureError, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
     <?php if ($year <= 0 || $registerName === ''): ?>
@@ -320,13 +376,7 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
     </div>
 
     <div class="save-panel">
-      <form id="save-form" method="post" class="save-form">
-        <input type="hidden" name="action" value="save">
-        <input type="hidden" name="save_year" value="<?= (int)$year ?>">
-        <input type="hidden" name="save_source_register" value="<?= htmlspecialchars($registerName, ENT_QUOTES, 'UTF-8') ?>">
-        <input type="hidden" name="cell_edits" id="cell-edits-input">
-        <input type="hidden" name="added_jobs" id="added-jobs-input">
-        <div class="total-summary" aria-live="polite">
+      <div class="total-summary" aria-live="polite">
           <div class="total-item">
             <div class="total-main">
               <span class="total-label">売上合計</span>
@@ -347,7 +397,30 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
               <span class="total-subvalue">2H <span class="total-value" data-total-metric="syauri" data-total-half="2h">0</span></span>
             </div>
           </div>
-        </div>
+      </div>
+      <div class="feature-budget-panel">
+        <h3 class="subhead">予算設定</h3>
+        <form method="post" class="feature-budget-form">
+          <input type="hidden" name="action" value="save_feature">
+          <input type="hidden" name="feature_year" value="<?= (int)$year ?>">
+          <input type="hidden" name="feature_register_name" value="<?= htmlspecialchars($registerName, ENT_QUOTES, 'UTF-8') ?>">
+          <label>
+            <span>1H 予算</span>
+            <input type="text" class="feature-budget-input" name="feature_1h" value="<?= htmlspecialchars($formatMoney((string)($featureBudget['1h'] ?? '')), ENT_QUOTES, 'UTF-8') ?>" inputmode="numeric" placeholder="未設定">
+          </label>
+          <label>
+            <span>2H 予算</span>
+            <input type="text" class="feature-budget-input" name="feature_2h" value="<?= htmlspecialchars($formatMoney((string)($featureBudget['2h'] ?? '')), ENT_QUOTES, 'UTF-8') ?>" inputmode="numeric" placeholder="未設定">
+          </label>
+          <button type="submit" class="secondary-btn">予算を保存</button>
+        </form>
+      </div>
+      <form id="save-form" method="post" class="save-form">
+        <input type="hidden" name="action" value="save">
+        <input type="hidden" name="save_year" value="<?= (int)$year ?>">
+        <input type="hidden" name="save_source_register" value="<?= htmlspecialchars($registerName, ENT_QUOTES, 'UTF-8') ?>">
+        <input type="hidden" name="cell_edits" id="cell-edits-input">
+        <input type="hidden" name="added_jobs" id="added-jobs-input">
         <div class="add-job-panel">
           <h3 class="subhead">ジョブ追加</h3>
           <div class="add-job-main-row">

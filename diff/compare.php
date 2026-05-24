@@ -109,8 +109,8 @@ if ($year <= 0 || $registerNew === '' || $registerOld === '') {
   $error = 'year / new / old のURLパラメータを指定してください。';
 } else {
   $forecast = load_forecast($year);
-  $newData = (array)($forecast[$registerNew] ?? []);
-  $oldData = (array)($forecast[$registerOld] ?? []);
+  $newData = get_register_jobs($forecast, $registerNew);
+  $oldData = get_register_jobs($forecast, $registerOld);
 
   if (count($newData) === 0 && count($oldData) === 0) {
     $error = '指定されたnew/oldの登録データが見つかりません。';

@@ -74,6 +74,81 @@ function forecast_file_path(int $year): string
   return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . $year . '_forecast.json';
 }
 
+function default_register_feature(): array
+{
+  return [
+    '1h' => '',
+    '2h' => '',
+  ];
+}
+
+function normalize_register_feature($feature): array
+{
+  $default = default_register_feature();
+  if (!is_array($feature)) {
+    return $default;
+  }
+
+  foreach (['1h', '2h'] as $k) {
+    if (!array_key_exists($k, $feature)) {
+      continue;
+    }
+
+    $v = $feature[$k];
+    if (is_scalar($v)) {
+      $default[$k] = trim((string)$v);
+    }
+  }
+
+  return $default;
+}
+
+function get_register_jobs(array $forecast, string $registerName): array
+{
+  $entry = $forecast[$registerName] ?? null;
+  if (!is_array($entry)) {
+    return [];
+  }
+
+  if (isset($entry['job']) && is_array($entry['job'])) {
+    return $entry['job'];
+  }
+
+  if (isset($entry['records']) && is_array($entry['records'])) {
+    // Legacy format handled by caller-specific migration flow.
+    return [];
+  }
+
+  return $entry;
+}
+
+function get_register_feature(array $forecast, string $registerName): array
+{
+  $entry = $forecast[$registerName] ?? null;
+  if (!is_array($entry)) {
+    return default_register_feature();
+  }
+
+  if (!array_key_exists('job', $entry) && !array_key_exists('feature', $entry)) {
+    // Legacy register payload without feature/job wrapper.
+    return default_register_feature();
+  }
+
+  return normalize_register_feature($entry['feature'] ?? null);
+}
+
+function set_register_entry(array &$forecast, string $registerName, array $jobs, ?array $feature = null): void
+{
+  $nextFeature = $feature !== null
+    ? normalize_register_feature($feature)
+    : get_register_feature($forecast, $registerName);
+
+  $forecast[$registerName] = [
+    'feature' => $nextFeature,
+    'job' => $jobs,
+  ];
+}
+
 function load_forecast(int $year): array
 {
   $path = forecast_file_path($year);
@@ -216,15 +291,15 @@ function save_named_forecast_records(int $year, string $registerName, array $row
 {
   $data = load_forecast($year);
 
-  $current = $data[$registerName] ?? [];
-  if (!is_array($current)) {
-    $current = [];
+  $currentEntry = $data[$registerName] ?? [];
+  if (!is_array($currentEntry)) {
+    $currentEntry = [];
   }
 
   $existingJobs = [];
-  if (isset($current['records']) && is_array($current['records'])) {
+  if (isset($currentEntry['records']) && is_array($currentEntry['records'])) {
     // Backward-compatible migration from previous {"records": [...]} format.
-    foreach ($current['records'] as $legacyRow) {
+    foreach ($currentEntry['records'] as $legacyRow) {
       if (!is_array($legacyRow)) {
         continue;
       }
@@ -239,7 +314,7 @@ function save_named_forecast_records(int $year, string $registerName, array $row
       $existingJobs[$jobKey] = $normalized;
     }
   } else {
-    foreach ($current as $jobKey => $jobRecord) {
+    foreach (get_register_jobs($data, $registerName) as $jobKey => $jobRecord) {
       if (is_array($jobRecord)) {
         $existingJobs[(string)$jobKey] = $jobRecord;
       }
@@ -261,7 +336,7 @@ function save_named_forecast_records(int $year, string $registerName, array $row
     $existingJobs[$jobKey] = $normalized;
   }
 
-  $data[$registerName] = $existingJobs;
+  set_register_entry($data, $registerName, $existingJobs, get_register_feature($data, $registerName));
 
   if (!save_forecast($year, $data)) {
     return false;
@@ -570,7 +645,8 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
   };
 
   $forecast = load_forecast($year);
-  $sourceJobs = $forecast[$sourceRegister] ?? [];
+  $sourceJobs = get_register_jobs($forecast, $sourceRegister);
+  $sourceFeature = get_register_feature($forecast, $sourceRegister);
 
   if (!is_array($sourceJobs)) {
     return false;
@@ -846,7 +922,7 @@ function save_forecast_with_edits(int $year, string $sourceRegister, string $new
     }
   }
 
-  $forecast[$newRegister] = $newJobs;
+  set_register_entry($forecast, $newRegister, $newJobs, $sourceFeature);
 
   if (!save_forecast($year, $forecast)) {
     return false;
@@ -905,4 +981,21 @@ function delete_named_forecast_register(int $year, string $registerName): bool
   }
 
   return true;
+}
+
+function save_register_feature(int $year, string $registerName, array $feature): bool
+{
+  if ($year <= 0 || $registerName === '') {
+    return false;
+  }
+
+  $forecast = load_forecast($year);
+  if (!array_key_exists($registerName, $forecast)) {
+    return false;
+  }
+
+  $jobs = get_register_jobs($forecast, $registerName);
+  set_register_entry($forecast, $registerName, $jobs, $feature);
+
+  return save_forecast($year, $forecast);
 }

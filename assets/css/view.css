@@ -296,6 +296,91 @@ th {
   margin-top: 10px;
 }
 
+.feature-budget-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #fbfefe;
+}
+
+.feature-budget-panel .subhead {
+  margin: 0 0 10px;
+}
+
+.feature-budget-form,
+.feature-budget-panel form {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.feature-budget-form label,
+.feature-budget-panel form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.feature-budget-form label > span,
+.feature-budget-panel form label > span {
+  font-weight: 600;
+}
+
+.feature-budget-form .feature-budget-input,
+.feature-budget-panel form .feature-budget-input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 10px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.feature-budget-form .feature-budget-input::placeholder,
+.feature-budget-panel form .feature-budget-input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.feature-budget-form .feature-budget-input:hover,
+.feature-budget-panel form .feature-budget-input:hover {
+  border-color: #94a3b8;
+}
+
+.feature-budget-form .feature-budget-input:focus,
+.feature-budget-panel form .feature-budget-input:focus {
+  outline: none;
+  border-color: #0f766e;
+  background: #fcfffe;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+}
+
+.feature-budget-form .secondary-btn,
+.feature-budget-panel form .secondary-btn {
+  height: 38px;
+  padding: 0 16px;
+}
+
+@media (max-width: 800px) {
+  .feature-budget-form,
+  .feature-budget-panel form {
+    align-items: stretch;
+  }
+
+  .feature-budget-form label,
+  .feature-budget-panel form label {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .add-job-panel {
   margin-top: 14px;
   padding: 14px;
@@ -394,12 +479,33 @@ th {
 
 .add-job-month-item input {
   width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 4px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
   text-align: right;
   box-sizing: border-box;
   min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: #ffffff;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.add-job-month-item input::placeholder {
+  color: #94a3b8;
+}
+
+.add-job-month-item input:hover {
+  border-color: #94a3b8;
+}
+
+.add-job-month-item input:focus {
+  outline: none;
+  border-color: #0f766e;
+  background: #fcfffe;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
 }
 
 .add-job-actions {

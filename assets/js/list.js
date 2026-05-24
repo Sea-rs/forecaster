@@ -10,6 +10,7 @@
   const addJobButton = document.getElementById('add-job-button');
   const addedJobsList = document.getElementById('added-jobs-list');
   const addJobMonthInputs = Array.from(document.querySelectorAll('.add-job-month-input'));
+  const featureBudgetInputs = Array.from(document.querySelectorAll('.feature-budget-input'));
   const monthLabels = ['4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月'];
   const pendingAddedJobs = [];
   const addJobStatusInput = document.getElementById('add-job-status');
@@ -60,6 +61,34 @@
     return new Intl.NumberFormat('ja-JP', {
       maximumFractionDigits: 0,
     }).format(Number(value));
+  };
+
+  const formatAmountInputForBlur = (input, emptyAsZero = false) => {
+    const raw = String(input.value ?? '').replace(/,/g, '').trim();
+    if (raw === '') {
+      input.value = emptyAsZero ? '0' : '';
+      return;
+    }
+
+    const normalized = normalizeValue(raw);
+    if (normalized === null) {
+      input.value = raw;
+      return;
+    }
+
+    input.value = formatMoney(normalized);
+  };
+
+  const bindAmountInputFormatting = (inputs, emptyAsZero = false) => {
+    inputs.forEach((input) => {
+      input.addEventListener('focus', () => {
+        input.value = String(input.value ?? '').replace(/,/g, '').trim();
+      });
+      input.addEventListener('blur', () => {
+        formatAmountInputForBlur(input, emptyAsZero);
+      });
+      formatAmountInputForBlur(input, emptyAsZero);
+    });
   };
 
   const escapeHtml = (value) => {
@@ -324,6 +353,9 @@
 
     return JSON.stringify(edits);
   };
+
+  bindAmountInputFormatting(addJobMonthInputs, true);
+  bindAmountInputFormatting(featureBudgetInputs, false);
 
   if (addJobButton && addJobNameInput && addJobMonthInputs.length > 0) {
     renderAddedJobs();

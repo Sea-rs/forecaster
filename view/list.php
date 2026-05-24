@@ -328,12 +328,24 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
         <input type="hidden" name="added_jobs" id="added-jobs-input">
         <div class="total-summary" aria-live="polite">
           <div class="total-item">
-            <span class="total-label">売上合計</span>
-            <span id="total-uriage" class="total-value" data-total-metric="uriage">0</span>
+            <div class="total-main">
+              <span class="total-label">売上合計</span>
+              <span id="total-uriage" class="total-value total-primary-value" data-total-metric="uriage">0</span>
+            </div>
+            <div class="total-breakdown">
+              <span class="total-subvalue">1H <span class="total-value" data-total-metric="uriage" data-total-half="1h">0</span></span>
+              <span class="total-subvalue">2H <span class="total-value" data-total-metric="uriage" data-total-half="2h">0</span></span>
+            </div>
           </div>
           <div class="total-item">
-            <span class="total-label">社売合計</span>
-            <span id="total-syauri" class="total-value" data-total-metric="syauri">0</span>
+            <div class="total-main">
+              <span class="total-label">社売合計</span>
+              <span id="total-syauri" class="total-value total-primary-value" data-total-metric="syauri">0</span>
+            </div>
+            <div class="total-breakdown">
+              <span class="total-subvalue">1H <span class="total-value" data-total-metric="syauri" data-total-half="1h">0</span></span>
+              <span class="total-subvalue">2H <span class="total-value" data-total-metric="syauri" data-total-half="2h">0</span></span>
+            </div>
           </div>
         </div>
         <div class="add-job-panel">

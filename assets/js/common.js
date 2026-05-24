@@ -265,20 +265,38 @@ window.ForecasterUI.closeModal = (modal) => {
       }
     });
 
-    // Update overall totals from 1H + 2H values.
+    // Update overall totals and each half-year total.
     ['uriage', 'syauri'].forEach((metric) => {
       const target = document.querySelector(`.total-value[data-total-metric="${metric}"]`);
-      if (!target) {
+      const firstHalfTarget = document.querySelector(`.total-value[data-total-metric="${metric}"][data-total-half="1h"]`);
+      const secondHalfTarget = document.querySelector(`.total-value[data-total-metric="${metric}"][data-total-half="2h"]`);
+      if (!target && !firstHalfTarget && !secondHalfTarget) {
         return;
       }
 
-      let grandTotal = 0;
+      let firstHalfTotal = 0;
+      let secondHalfTotal = 0;
+
       document.querySelectorAll(`.half-year-value[data-metric="${metric}"]`).forEach((cell) => {
         const normalized = String(cell.textContent ?? '').replace(/,/g, '').trim();
-        grandTotal += Number(normalized) || 0;
+        const value = Number(normalized) || 0;
+        if (cell.dataset.half === '1h') {
+          firstHalfTotal += value;
+        }
+        if (cell.dataset.half === '2h') {
+          secondHalfTotal += value;
+        }
       });
 
-      target.textContent = formatValue(grandTotal);
+      if (target) {
+        target.textContent = formatValue(firstHalfTotal + secondHalfTotal);
+      }
+      if (firstHalfTarget) {
+        firstHalfTarget.textContent = formatValue(firstHalfTotal);
+      }
+      if (secondHalfTarget) {
+        secondHalfTarget.textContent = formatValue(secondHalfTotal);
+      }
     });
   };
 

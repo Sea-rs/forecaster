@@ -249,6 +249,10 @@ th {
   color: #0b4f4a;
 }
 
+.total-value.is-negative {
+  color: #dc2626;
+}
+
 .total-primary-value {
   font-size: 28px;
   line-height: 1;

@@ -194,6 +194,36 @@ window.ForecasterUI.closeModal = (modal) => {
     }).format(Number(value));
   };
 
+  const parseBudgetInputValue = (selector) => {
+    const input = document.querySelector(selector);
+    if (!(input instanceof HTMLInputElement)) {
+      return null;
+    }
+
+    const trimmed = String(input.value ?? '').replace(/,/g, '').trim();
+    if (trimmed === '') {
+      return null;
+    }
+
+    const value = Number(trimmed);
+    return Number.isFinite(value) ? value : null;
+  };
+
+  const setBudgetDiffValue = (target, value) => {
+    if (!target) {
+      return;
+    }
+
+    if (value === null) {
+      target.textContent = '-';
+      target.classList.remove('is-negative');
+      return;
+    }
+
+    target.textContent = formatValue(value);
+    target.classList.toggle('is-negative', value < 0);
+  };
+
   const calculateQuarterTotal = (jobStatus, jobName, quarter, metric) => {
     const indices = quarterMapping[quarter];
     if (!indices) {
@@ -297,6 +327,23 @@ window.ForecasterUI.closeModal = (modal) => {
       if (secondHalfTarget) {
         secondHalfTarget.textContent = formatValue(secondHalfTotal);
       }
+
+      if (metric === 'uriage') {
+        const totalDiffTarget = document.querySelector('.total-value[data-total-budget-diff="total"]');
+        const firstHalfDiffTarget = document.querySelector('.total-value[data-total-budget-diff="1h"]');
+        const secondHalfDiffTarget = document.querySelector('.total-value[data-total-budget-diff="2h"]');
+        const firstHalfBudget = parseBudgetInputValue('input[name="feature_1h"]');
+        const secondHalfBudget = parseBudgetInputValue('input[name="feature_2h"]');
+
+        setBudgetDiffValue(firstHalfDiffTarget, firstHalfBudget === null ? null : firstHalfBudget - firstHalfTotal);
+        setBudgetDiffValue(secondHalfDiffTarget, secondHalfBudget === null ? null : secondHalfBudget - secondHalfTotal);
+        setBudgetDiffValue(
+          totalDiffTarget,
+          firstHalfBudget === null || secondHalfBudget === null
+            ? null
+            : (firstHalfBudget + secondHalfBudget) - (firstHalfTotal + secondHalfTotal)
+        );
+      }
     });
   };
 
@@ -315,5 +362,11 @@ window.ForecasterUI.closeModal = (modal) => {
 
   document.addEventListener('forecaster:cell-updated', () => {
     updateAggregates();
+  });
+
+  document.querySelectorAll('.feature-budget-input').forEach((input) => {
+    input.addEventListener('blur', () => {
+      updateAggregates();
+    });
   });
 })();

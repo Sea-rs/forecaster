@@ -397,6 +397,16 @@ render_page_start('FORECASTER | View List', '/assets/css/view.css', 'view', 'lis
               <span class="total-subvalue">2H <span class="total-value" data-total-metric="syauri" data-total-half="2h">0</span></span>
             </div>
           </div>
+          <div class="total-item">
+            <div class="total-main">
+              <span class="total-label">予算差</span>
+              <span id="total-budget-diff" class="total-value total-primary-value" data-total-budget-diff="total">-</span>
+            </div>
+            <div class="total-breakdown">
+              <span class="total-subvalue">1H <span class="total-value" data-total-budget-diff="1h">-</span></span>
+              <span class="total-subvalue">2H <span class="total-value" data-total-budget-diff="2h">-</span></span>
+            </div>
+          </div>
       </div>
       <div class="feature-budget-panel">
         <h3 class="subhead">予算設定</h3>
